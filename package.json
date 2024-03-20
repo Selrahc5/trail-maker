@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@dwayneparton/geojson-to-gpx": "^0.1.0"
+  },
+  "name": "trail-maker",
+  "version": "1.0.0",
+  "description": "trail maker",
+  "main": "index.html",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Charles GIBERT",
+  "license": "ISC"
+}
