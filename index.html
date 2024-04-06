@@ -65,6 +65,7 @@
 <button id="saveTrailButton">save trail</button>
 <label for="saveFile">Filename:</label>
 <input id="saveFile"/>
+<p id="distance">Trail total distance: 0 km</p>
 
 <script type="module">
 	import saveGeojson from './modules/geojson.js';
@@ -117,13 +118,29 @@
 	var markerArray = [];
 	var polylineOption = {color: 'green'};
 	var polyline = L.polyline([], polylineOption);
+	var totalDistanceMeter = 0.00000;
 	var deletedMarkers = [];
 	var filename = "trail.gpx";
+
+	function updateTotalDistance() {
+		document.getElementById("distance").innerText = "Trail total distance: " + totalDistanceMeter/1000 + " km";
+	}
 
 	function updatePolyline() {
 		var newValues = markerArray.map((marker) => marker.getLatLng())
 		map.removeLayer(polyline);
 		polyline = L.polyline(newValues, polylineOption).addTo(map);
+
+		totalDistanceMeter = 0.00000;
+		var previousMarkerLatLng = null;
+		if (markerArray.length > 0) {
+			previousMarkerLatLng = markerArray[0].getLatLng();
+		}
+		for (const marker of markerArray) {
+			var markerLatLng = marker.getLatLng();
+			totalDistanceMeter += previousMarkerLatLng.distanceTo(markerLatLng);
+		}
+		updateTotalDistance();
 	}
 
 	function onMapClick(e) {
@@ -132,8 +149,9 @@
 		markerArray.push(marker);
 		updatePolyline();
 		deletedMarkers = [];
-		geojsonContent.features[0].geometry.coordinates.push([coordinates['lng'],
-				coordinates['lat']])
+		geojsonContent.features[0].geometry.coordinates.push(
+			[coordinates['lng'],
+			coordinates['lat']])
 	}
 
 	const saveButton = document.querySelector('#saveTrailButton')
