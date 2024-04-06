@@ -63,6 +63,8 @@
 <button id="undoButton">undo</button>
 <button id="clearTrailButton">clear trail</button>
 <button id="saveTrailButton">save trail</button>
+<label for="saveFile">Filename:</label>
+<input id="saveFile"/>
 
 <script type="module">
 	import saveGeojson from './modules/geojson.js';
@@ -116,6 +118,7 @@
 	var polylineOption = {color: 'green'};
 	var polyline = L.polyline([], polylineOption);
 	var deletedMarkers = [];
+	var filename = "trail.gpx";
 
 	function updatePolyline() {
 		var newValues = markerArray.map((marker) => marker.getLatLng())
@@ -135,7 +138,11 @@
 
 	const saveButton = document.querySelector('#saveTrailButton')
 	saveButton.addEventListener("click", (event) =>{
-		saveGeojson(geojsonContent);
+		var newFilename = document.getElementById("saveFile").value;
+		if (newFilename != "") {
+			filename = newFilename;
+		}
+		saveGeojson(geojsonContent, filename);
 	});
 
 	const clearButton = document.querySelector('#clearTrailButton')

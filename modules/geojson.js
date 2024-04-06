@@ -1,7 +1,7 @@
 import GeoJsonToGpx from "../node_modules/@dwayneparton/geojson-to-gpx/dist/index.js"
 
 
-export default function saveGeojson(geojson) {
+export default function saveGeojson(geojson, filename) {
 	const options = {
 	  metadata: {
 		name: 'A grand adventure',
@@ -18,7 +18,7 @@ export default function saveGeojson(geojson) {
 	const gpxString = new XMLSerializer().serializeToString(gpx);
 
 	const link = document.createElement('a');
-	link.download = 'trail.gpx';
+	link.download = filename;
 	const blob = new Blob([gpxString], {type: 'text/xml'});
 	link.href = window.URL.createObjectURL(blob);
 	link.click();
