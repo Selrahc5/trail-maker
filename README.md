@@ -1,21 +1,26 @@
-# trail-maker
-A very simple app to generate a gpx file from a trail
+# Trail Maker
+
+A simple web app to draw trails on a map and export them as GPX files.
+
+## Features
+
+- Full-screen interactive map powered by Leaflet and OpenStreetMap
+- Click to place waypoints and draw your trail
+- Undo / Redo support
+- Live distance tracking
+- Export to GPX for use with maps.me, OsmAnd, or any GPX-compatible app
 
 ## Usage
 
-In a shell, in your project directory:
-
 ```sh
-$ make
-python -m http.server 8001&
-google-chrome 0.0.0.0:8001
-Serving HTTP on 0.0.0.0 port 8001 (http://0.0.0.0:8001/) ...
-Opening in existing browser session.
-127.0.0.1 - - [07/Apr/2024 00:56:55] "GET / HTTP/1.1" 304 -
+make
 ```
 
-* Click on the map
-* Draw some trails
-* Save your result
-* Load the GPX file into maps.me or any other GPX compatible map apps
-* Enjoy your time outside with your map
+This starts a local server on port 8001 and opens the app in your browser.
+
+Then:
+
+1. Click on the map to place waypoints
+2. Use **Undo** / **Redo** to adjust your trail
+3. Enter a filename and click **Save** to download the GPX file
+4. Load the GPX file into your favourite map app and enjoy your time outside
