@@ -194,6 +194,142 @@
 			background: #ddd;
 		}
 
+		.cycle-panel {
+			position: absolute;
+			top: 70px;
+			left: 16px;
+			z-index: 500;
+			width: 240px;
+			background: rgba(255, 255, 255, 0.95);
+			backdrop-filter: blur(10px);
+			border-radius: 14px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+			overflow: hidden;
+		}
+
+		.cycle-panel-header {
+			background: linear-gradient(135deg, #1565c0, #1e88e5);
+			color: #fff;
+			padding: 10px 14px;
+			font-size: 0.9rem;
+			font-weight: 600;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			cursor: pointer;
+			user-select: none;
+		}
+
+		.cycle-panel-header:hover {
+			filter: brightness(1.05);
+		}
+
+		.cycle-panel-header .toggle-icon {
+			margin-left: auto;
+			transition: transform 0.2s ease;
+		}
+
+		.cycle-panel-header .toggle-icon.collapsed {
+			transform: rotate(-90deg);
+		}
+
+		.cycle-panel-body {
+			padding: 12px 14px;
+		}
+
+		.cycle-panel-body label {
+			color: #555;
+			font-weight: 500;
+			margin-bottom: 3px;
+		}
+
+		.cycle-panel-body .form-control,
+		.cycle-panel-body .form-select {
+			font-size: 0.85rem;
+			border-color: #bbdefb;
+		}
+
+		.cycle-panel-body .form-control:focus,
+		.cycle-panel-body .form-select:focus {
+			border-color: #42a5f5;
+			box-shadow: 0 0 0 0.2rem rgba(66, 165, 245, 0.2);
+		}
+
+		.btn-generate {
+			background: linear-gradient(135deg, #1565c0, #1e88e5);
+			color: #fff;
+			border: none;
+			border-radius: 8px;
+			font-weight: 500;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			transition: all 0.2s ease;
+		}
+
+		.btn-generate:hover {
+			background: linear-gradient(135deg, #0d47a1, #1565c0);
+			color: #fff;
+			transform: translateY(-1px);
+			box-shadow: 0 2px 8px rgba(21, 101, 192, 0.3);
+		}
+
+		.btn-generate:active {
+			transform: translateY(0);
+		}
+
+		.btn-generate:disabled {
+			opacity: 0.7;
+			transform: none;
+		}
+
+		.btn-shuffle {
+			background: rgba(21, 101, 192, 0.1);
+			color: #1565c0;
+			border: 1px solid #bbdefb;
+			border-radius: 8px;
+			font-weight: 500;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			transition: all 0.2s ease;
+		}
+
+		.btn-shuffle:hover {
+			background: rgba(21, 101, 192, 0.18);
+			color: #0d47a1;
+			transform: translateY(-1px);
+		}
+
+		.btn-shuffle:active {
+			transform: translateY(0);
+		}
+
+		.cycle-status {
+			font-size: 0.78rem;
+			color: #777;
+		}
+
+		.cycle-status.error {
+			color: #c62828;
+		}
+
+		.cycle-status.success {
+			color: #2e7d32;
+		}
+
+		.api-key-link {
+			font-size: 0.75rem;
+		}
+
+		.spinner-border-sm {
+			width: 0.9rem;
+			height: 0.9rem;
+			border-width: 0.15em;
+		}
+
 		@media (max-width: 600px) {
 			.header-bar {
 				padding: 8px 12px;
@@ -219,6 +355,10 @@
 			}
 			.bottom-panel .input-group {
 				max-width: 100%;
+			}
+			.cycle-panel {
+				width: 200px;
+				left: 8px;
 			}
 		}
 	</style>
@@ -252,6 +392,40 @@
 				<i class="bi bi-download"></i>
 				<span>Save</span>
 			</button>
+		</div>
+	</div>
+
+	<div class="cycle-panel">
+		<div class="cycle-panel-header" id="cyclePanelToggle">
+			<i class="bi bi-bicycle"></i>
+			Cycle Route
+			<i class="bi bi-chevron-down toggle-icon" id="toggleIcon"></i>
+		</div>
+		<div class="cycle-panel-body" id="cyclePanelBody">
+			<div class="mb-2">
+				<label class="form-label small mb-1">API Key</label>
+				<input type="password" class="form-control form-control-sm" id="apiKey" placeholder="OpenRouteService key">
+				<a href="https://openrouteservice.org/dev/#/signup" target="_blank" class="api-key-link text-muted">Get a free key</a>
+			</div>
+			<div class="mb-2">
+				<label class="form-label small mb-1">Distance</label>
+				<select class="form-select form-select-sm" id="cycleDistance">
+					<option value="10000">10 km</option>
+					<option value="20000">20 km</option>
+					<option value="30000" selected>30 km</option>
+					<option value="40000">40 km</option>
+					<option value="50000">50 km</option>
+					<option value="75000">75 km</option>
+					<option value="100000">100 km</option>
+				</select>
+			</div>
+			<button class="btn btn-sm btn-generate w-100" id="generateRoute">
+				<i class="bi bi-play-circle"></i> Generate
+			</button>
+			<button class="btn btn-sm btn-shuffle w-100 mt-1" id="shuffleRoute">
+				<i class="bi bi-shuffle"></i> Shuffle
+			</button>
+			<div class="cycle-status mt-2" id="cycleStatus">Click the map to set a start point, then generate.</div>
 		</div>
 	</div>
 
@@ -296,6 +470,25 @@
 	var totalDistanceMeter = 0.00000;
 	var deletedMarkers = [];
 	var filename = "trail.gpx";
+	var startMarker = null;
+	var cyclePolyline = null;
+	var cycleSeed = 0;
+
+	const apiKeyInput = document.getElementById('apiKey');
+	var savedKey = localStorage.getItem('ors_api_key');
+	if (savedKey) apiKeyInput.value = savedKey;
+	apiKeyInput.addEventListener('change', () => {
+		localStorage.setItem('ors_api_key', apiKeyInput.value);
+	});
+
+	const cyclePanelToggle = document.getElementById('cyclePanelToggle');
+	const cyclePanelBody = document.getElementById('cyclePanelBody');
+	const toggleIcon = document.getElementById('toggleIcon');
+	cyclePanelToggle.addEventListener('click', () => {
+		var hidden = cyclePanelBody.style.display === 'none';
+		cyclePanelBody.style.display = hidden ? 'block' : 'none';
+		toggleIcon.classList.toggle('collapsed', !hidden);
+	});
 
 	function updateTotalDistance() {
 		var distKm = (totalDistanceMeter / 1000).toFixed(2);
@@ -320,6 +513,23 @@
 		updateTotalDistance();
 	}
 
+	function clearTrail() {
+		geojsonContent.features[0].geometry.coordinates = [];
+		for (let element of markerArray) {
+			map.removeLayer(element);
+		}
+		markerArray = [];
+		deletedMarkers = [];
+		if (cyclePolyline) {
+			map.removeLayer(cyclePolyline);
+			cyclePolyline = null;
+		}
+		map.removeLayer(polyline);
+		polyline = L.polyline([], polylineOption);
+		totalDistanceMeter = 0;
+		updateTotalDistance();
+	}
+
 	function onMapClick(e) {
 		var coordinates = e.latlng;
 		var marker = L.marker(coordinates).addTo(map);
@@ -328,7 +538,103 @@
 		deletedMarkers = [];
 		geojsonContent.features[0].geometry.coordinates.push(
 			[coordinates['lng'], coordinates['lat']]);
+
+		startMarker = coordinates;
+		setCycleStatus('Start point set. Ready to generate.', '');
 	}
+
+	function setCycleStatus(text, type) {
+		var el = document.getElementById('cycleStatus');
+		el.innerText = text;
+		el.className = 'cycle-status mt-2' + (type ? ' ' + type : '');
+	}
+
+	async function generateCycleRoute(seed) {
+		var apiKey = apiKeyInput.value.trim();
+		if (!apiKey) {
+			setCycleStatus('Please enter an API key.', 'error');
+			return;
+		}
+
+		if (!startMarker && markerArray.length === 0) {
+			setCycleStatus('Click the map to set a start point first.', 'error');
+			return;
+		}
+
+		var origin = startMarker || markerArray[markerArray.length - 1].getLatLng();
+		var distance = parseInt(document.getElementById('cycleDistance').value);
+
+		var generateBtn = document.getElementById('generateRoute');
+		var shuffleBtn = document.getElementById('shuffleRoute');
+		generateBtn.disabled = true;
+		shuffleBtn.disabled = true;
+		generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generating...';
+		setCycleStatus('Requesting route from OpenRouteService...', '');
+
+		try {
+			var response = await fetch('https://api.openrouteservice.org/v2/directions/cycling-road/geojson', {
+				method: 'POST',
+				headers: {
+					'Authorization': apiKey,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					coordinates: [[origin.lng, origin.lat]],
+					options: {
+						round_trip: {
+							length: distance,
+							points: Math.max(3, Math.round(distance / 5000)),
+							seed: seed,
+						}
+					}
+				}),
+			});
+
+			if (!response.ok) {
+				var errorData = await response.json().catch(() => null);
+				var msg = errorData?.error?.message || response.statusText;
+				throw new Error(msg);
+			}
+
+			var data = await response.json();
+			var routeCoords = data.features[0].geometry.coordinates;
+			var routeDistance = data.features[0].properties.summary.distance;
+
+			clearTrail();
+
+			var latLngs = routeCoords.map(c => [c[1], c[0]]);
+			cyclePolyline = L.polyline(latLngs, {
+				color: '#1565c0',
+				weight: 5,
+				opacity: 0.85,
+			}).addTo(map);
+
+			geojsonContent.features[0].geometry.coordinates = routeCoords;
+			totalDistanceMeter = routeDistance;
+			updateTotalDistance();
+
+			map.fitBounds(cyclePolyline.getBounds(), {padding: [60, 60]});
+
+			var distKm = (routeDistance / 1000).toFixed(1);
+			setCycleStatus('Route generated: ' + distKm + ' km', 'success');
+		} catch (err) {
+			setCycleStatus('Error: ' + err.message, 'error');
+		} finally {
+			generateBtn.disabled = false;
+			shuffleBtn.disabled = false;
+			generateBtn.innerHTML = '<i class="bi bi-play-circle"></i> Generate';
+		}
+	}
+
+	document.getElementById('generateRoute').addEventListener('click', () => {
+		cycleSeed = 0;
+		generateCycleRoute(cycleSeed);
+	});
+
+	document.getElementById('shuffleRoute').addEventListener('click', () => {
+		cycleSeed = Math.floor(Math.random() * 100000);
+		generateCycleRoute(cycleSeed);
+	});
 
 	const saveButton = document.querySelector('#saveTrailButton');
 	saveButton.addEventListener("click", (event) => {
@@ -341,13 +647,9 @@
 
 	const clearButton = document.querySelector('#clearTrailButton');
 	clearButton.addEventListener("click", (event) => {
-		geojsonContent.features[0].geometry.coordinates = [];
-		for (let element of markerArray) {
-			map.removeLayer(element);
-			deletedMarkers.unshift(element);
-		}
-		markerArray = [];
-		updatePolyline();
+		clearTrail();
+		startMarker = null;
+		setCycleStatus('Click the map to set a start point, then generate.', '');
 	});
 
 	const undoButton = document.querySelector('#undoButton');

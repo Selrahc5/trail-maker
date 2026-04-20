@@ -18,8 +18,9 @@ export default function saveGeojson(geojson, filename) {
 	const gpxString = new XMLSerializer().serializeToString(gpx);
 
 	const link = document.createElement('a');
-	link.download = filename;
-	const blob = new Blob([gpxString], {type: 'text/xml'});
+	var gpxFilename = filename.endsWith('.gpx') ? filename : filename + '.gpx';
+	link.download = gpxFilename;
+	const blob = new Blob([gpxString], {type: 'application/gpx+xml'});
 	link.href = window.URL.createObjectURL(blob);
 	link.click();
 }
