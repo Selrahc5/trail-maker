@@ -4,7 +4,7 @@ A simple web app to draw trails on a map and export them as GPX files.
 
 ## Features
 
-- Full-screen interactive map powered by Leaflet and OpenStreetMap
+- Full-screen interactive map powered by Leaflet and OpenStreetMap, centered on your current location
 - Click to place waypoints and draw your trail manually
 - Undo / Redo support
 - Generate round-trip cycling routes via [OpenRouteService](https://openrouteservice.org) (road-optimised)
